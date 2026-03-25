@@ -1,15 +1,23 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 const NUM_ROWS = 6;
 const NUM_COLS = 4;
 
 function Grid4x6() {
+  const { width } = useWindowDimensions();
+  const horizontalMargin = 40;
+  const cellMargin = 4 * 2 * NUM_COLS;
+  const cellSize = (width - horizontalMargin - cellMargin) / NUM_COLS;
+
   return (
     <View style={styles.grid}>
       {Array.from({ length: NUM_ROWS }).map((_, rowIdx) => (
         <View key={rowIdx} style={styles.row}>
           {Array.from({ length: NUM_COLS }).map((_, colIdx) => (
-            <View key={colIdx} style={styles.cell}>
+            <View
+              key={colIdx}
+              style={[styles.cell, { width: cellSize, height: cellSize }]}
+            >
               <Text style={styles.cellText}>
                 {rowIdx * NUM_COLS + colIdx + 1}
               </Text>
@@ -29,13 +37,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   cell: {
-    width: 40,
-    height: 40,
     margin: 4,
     backgroundColor: "#e0e0e0",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 6,
+    flexShrink: 1,
   },
   cellText: {
     fontSize: 16,
