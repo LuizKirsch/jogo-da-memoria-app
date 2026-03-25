@@ -22,7 +22,6 @@ export function JogadorTurno({ currentPlayer, moves }: Props) {
 
   return (
     <View style={styles.container}>
-      {/* Jogador 1 */}
       <View style={getPlayerStyle(1)}>
         <Text style={getTextStyle(1)}>Jogador 1</Text>
         <Text style={[styles.moves, currentPlayer === 1 && styles.activeText]}>
@@ -34,7 +33,6 @@ export function JogadorTurno({ currentPlayer, moves }: Props) {
         <Text style={styles.vsText}>VS</Text>
       </View>
 
-      {/* Jogador 2 */}
       <View style={getPlayerStyle(2)}>
         <Text style={getTextStyle(2)}>Jogador 2</Text>
         <Text style={[styles.moves, currentPlayer === 2 && styles.activeText]}>
@@ -47,6 +45,7 @@ export function JogadorTurno({ currentPlayer, moves }: Props) {
 
 const styles = StyleSheet.create({
   container: {
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -112,5 +111,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 11,
     color: "#999",
+  },
+
+  activeText: {
+    color: "#FFFFFF",
   },
 });

@@ -3,13 +3,13 @@ import {
   Button,
   Image,
   StyleSheet,
-  Text,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
 
 import { JogadorTurno } from "../../components/jogador-turno";
+import { TelaVitoria } from "../../components/tela-vitoria";
 import { reiniciarJogo } from "../../scripts/Vitoria";
 
 function gerarParesEmbaralhados(qtdPares: number) {
@@ -47,8 +47,7 @@ function GradeJogoMemoria() {
     1: 0,
     2: 0,
   });
-  
-  // Novo estado para contar os acertos de cada jogador
+
   const [acertos, setAcertos] = useState<Record<number, number>>({
     1: 0,
     2: 0,
@@ -74,7 +73,7 @@ function GradeJogoMemoria() {
     setBloqueado(false);
     setJogadorAtual(1);
     setJogadas({ 1: 0, 2: 0 });
-    setAcertos({ 1: 0, 2: 0 }); // Zera os acertos ao reiniciar
+    setAcertos({ 1: 0, 2: 0 });
     setTemposTurno([]);
     setInicioTurno(Date.now());
   }
@@ -101,13 +100,12 @@ function GradeJogoMemoria() {
 
     if (cartas[primeira] === cartas[segunda]) {
       setCombinadas((prev) => [...prev, primeira, segunda]);
-      
-      // Regista o acerto para o jogador atual
+
       setAcertos((prev) => ({
         ...prev,
         [jogadorAtual]: prev[jogadorAtual] + 1,
       }));
-      
+
       setViradas([]);
       setBloqueado(false);
       setInicioTurno(Date.now());
@@ -121,35 +119,35 @@ function GradeJogoMemoria() {
 
       return () => clearTimeout(timer);
     }
-  }, [viradas, cartas, jogadorAtual, inicioTurno]);
+  }, [viradas]);
 
-  // Lógica para verificar se o jogo terminou
-  const jogoFinalizado = combinadas.length === LINHAS * COLUNAS && combinadas.length > 0;
+  const jogoFinalizado =
+    combinadas.length === LINHAS * COLUNAS && combinadas.length > 0;
 
-  // Renderiza o Ecrã de Vitória caso o jogo tenha terminado
+  const vencedor =
+    acertos[1] > acertos[2] ? 1 : acertos[2] > acertos[1] ? 2 : null;
+
+  const tempoTotalVencedor =
+    vencedor !== null
+      ? temposTurno
+          .filter((t) => t.jogador === vencedor)
+          .reduce((total, t) => total + t.tempo, 0)
+      : 0;
+
+  const jogadasVencedor = vencedor !== null ? jogadas[vencedor] : 0;
+
   if (jogoFinalizado) {
-    let mensagemVencedor = "Empate!";
-    if (acertos[1] > acertos[2]) mensagemVencedor = "Jogador 1 Venceu!";
-    else if (acertos[2] > acertos[1]) mensagemVencedor = "Jogador 2 Venceu!";
-
     return (
-      <View style={estilos.telaVitoria}>
-        <Text style={estilos.tituloVitoria}>Fim de Jogo!</Text>
-        <Text style={estilos.textoVencedor}>{mensagemVencedor}</Text>
-        
-        <View style={estilos.caixaAcertos}>
-          <Text style={estilos.textoAcertos}>Acertos do Jogador 1: {acertos[1]}</Text>
-          <Text style={estilos.textoAcertos}>Acertos do Jogador 2: {acertos[2]}</Text>
-        </View>
-
-        <TouchableOpacity style={estilos.botaoReiniciarVitoria} onPress={aoReiniciar}>
-          <Text style={estilos.textoBotaoReiniciar}>Jogar Novamente</Text>
-        </TouchableOpacity>
-      </View>
+      <TelaVitoria
+        acertos={acertos}
+        onReiniciar={aoReiniciar}
+        tempoVencedor={tempoTotalVencedor}
+        jogadasVencedor={jogadasVencedor}
+        vencedor={vencedor}
+      />
     );
   }
 
-  // Renderiza o tabuleiro do jogo
   return (
     <View style={estilos.container}>
       <View style={estilos.info}>
@@ -226,58 +224,6 @@ const estilos = StyleSheet.create({
   info: {
     padding: 10,
   },
-  // Estilos adicionados para o Ecrã de Vitória
-  telaVitoria: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f5f5f5',
-    padding: 20,
-  },
-  tituloVitoria: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
-  },
-  textoVencedor: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#4CAF50',
-    marginBottom: 30,
-  },
-  caixaAcertos: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-    marginBottom: 40,
-    width: '80%',
-  },
-  textoAcertos: {
-    fontSize: 18,
-    color: '#555',
-    marginVertical: 5,
-    textAlign: 'center',
-  },
-  botaoReiniciarVitoria: {
-    backgroundColor: '#2196F3',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-    shadowColor: "#2196F3",
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-  textoBotaoReiniciar: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  }
 });
 
 export default function TabIndex() {
