@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
-const NUM_ROWS = 4;
-const NUM_COLS = 6;
+const NUM_ROWS = 6;
+const NUM_COLS = 4;
 
 function Grid4x6() {
   return (
