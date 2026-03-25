@@ -12,7 +12,7 @@ function Grid4x6() {
   const cellSize = (width - horizontalMargin - cellMargin) / NUM_COLS;
 
   function handlePress() {
-    reiniciarJogo(); // chama seu script
+    reiniciarJogo(); // 
   }
 
   return (
@@ -33,8 +33,6 @@ function Grid4x6() {
           </View>
         ))}
       </View>
-
-      {/* botão correto no React Native */}
       <Button title="Reiniciar" onPress={handlePress} />
     </View>
   );
