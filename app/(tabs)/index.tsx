@@ -1,39 +1,51 @@
-import { StyleSheet, Text, View, useWindowDimensions, Button } from "react-native";
-import { vitoria, reiniciarJogo } from "..scripts\Vitoria.js";
+import { Button, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { reiniciarJogo } from "../scripts/Vitoria";
 
 const NUM_ROWS = 6;
 const NUM_COLS = 4;
 
 function Grid4x6() {
   const { width } = useWindowDimensions();
+
   const horizontalMargin = 40;
   const cellMargin = 4 * 2 * NUM_COLS;
   const cellSize = (width - horizontalMargin - cellMargin) / NUM_COLS;
 
+  function handlePress() {
+    reiniciarJogo(); // chama seu script
+  }
+
   return (
-    <View style={styles.grid}>
-      {Array.from({ length: NUM_ROWS }).map((_, rowIdx) => (
-        <View key={rowIdx} style={styles.row}>
-          {Array.from({ length: NUM_COLS }).map((_, colIdx) => (
-            <View
-              key={colIdx}
-              style={[styles.cell, { width: cellSize, height: cellSize }]}
-            >
-              <Text style={styles.cellText}>
-                {rowIdx * NUM_COLS + colIdx + 1}
-              </Text>
-            </View>
-          ))}
-        </View>
-      ))}
-    </View>
-    <View style={}>
-      <button title = "Reiniciar" onPress={handlePress}/>
+    <View style={styles.container}>
+      <View style={styles.grid}>
+        {Array.from({ length: NUM_ROWS }).map((_, rowIdx) => (
+          <View key={rowIdx} style={styles.row}>
+            {Array.from({ length: NUM_COLS }).map((_, colIdx) => (
+              <View
+                key={colIdx}
+                style={[styles.cell, { width: cellSize, height: cellSize }]}
+              >
+                <Text style={styles.cellText}>
+                  {rowIdx * NUM_COLS + colIdx + 1}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
+
+      {/* botão correto no React Native */}
+      <Button title="Reiniciar" onPress={handlePress} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   grid: {
     margin: 20,
   },
