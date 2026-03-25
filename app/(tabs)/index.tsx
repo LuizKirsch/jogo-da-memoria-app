@@ -101,7 +101,6 @@ function GradeJogoMemoria() {
     if (cartas[primeira] === cartas[segunda]) {
       setCombinadas((prev) => [...prev, primeira, segunda]);
       
-      // Regista o acerto para o jogador atual
       setAcertos((prev) => ({
         ...prev,
         [jogadorAtual]: prev[jogadorAtual] + 1,
@@ -129,14 +128,31 @@ function GradeJogoMemoria() {
     if (acertos[1] > acertos[2]) mensagemVencedor = "Jogador 1 Venceu!";
     else if (acertos[2] > acertos[1]) mensagemVencedor = "Jogador 2 Venceu!";
 
+    // Calcular o tempo total de cada jogador em segundos
+    const tempoJ1 = temposTurno.filter(t => t.jogador === 1).reduce((acc, curr) => acc + curr.tempo, 0) / 1000;
+    const tempoJ2 = temposTurno.filter(t => t.jogador === 2).reduce((acc, curr) => acc + curr.tempo, 0) / 1000;
+
     return (
       <View style={estilos.telaVitoria}>
         <Text style={estilos.tituloVitoria}>Fim de Jogo!</Text>
         <Text style={estilos.textoVencedor}>{mensagemVencedor}</Text>
         
-        <View style={estilos.caixaAcertos}>
-          <Text style={estilos.textoAcertos}>Acertos do Jogador 1: {acertos[1]}</Text>
-          <Text style={estilos.textoAcertos}>Acertos do Jogador 2: {acertos[2]}</Text>
+        <View style={estilos.caixaEstatisticas}>
+          <View style={estilos.colunaJogador}>
+            <Text style={estilos.nomeJogadorEstatistica}>Jogador 1</Text>
+            <Text style={estilos.textoAcertos}>Acertos: {acertos[1]}</Text>
+            <Text style={estilos.textoAcertos}>Jogadas: {jogadas[1]}</Text>
+            <Text style={estilos.textoAcertos}>Tempo: {tempoJ1.toFixed(1)}s</Text>
+          </View>
+          
+          <View style={estilos.divisorEstatistica} />
+
+          <View style={estilos.colunaJogador}>
+            <Text style={estilos.nomeJogadorEstatistica}>Jogador 2</Text>
+            <Text style={estilos.textoAcertos}>Acertos: {acertos[2]}</Text>
+            <Text style={estilos.textoAcertos}>Jogadas: {jogadas[2]}</Text>
+            <Text style={estilos.textoAcertos}>Tempo: {tempoJ2.toFixed(1)}s</Text>
+          </View>
         </View>
 
         <TouchableOpacity style={estilos.botaoReiniciarVitoria} onPress={aoReiniciar}>
@@ -222,7 +238,8 @@ const estilos = StyleSheet.create({
   info: {
     padding: 10,
   },
-  // Estilos adicionados para o Ecrã de Vitória
+  
+  // --- Estilos da Tela de Vitória ---
   telaVitoria: {
     flex: 1,
     alignItems: 'center',
@@ -242,21 +259,38 @@ const estilos = StyleSheet.create({
     color: '#4CAF50',
     marginBottom: 30,
   },
-  caixaAcertos: {
+  caixaEstatisticas: {
+    flexDirection: 'row',
     backgroundColor: '#fff',
     padding: 20,
-    borderRadius: 10,
+    borderRadius: 15,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
     marginBottom: 40,
-    width: '80%',
+    width: '90%',
+    justifyContent: 'space-between',
+  },
+  colunaJogador: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  divisorEstatistica: {
+    width: 2,
+    backgroundColor: '#e0e0e0',
+    marginHorizontal: 15,
+  },
+  nomeJogadorEstatistica: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#444',
+    marginBottom: 10,
   },
   textoAcertos: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#555',
-    marginVertical: 5,
+    marginVertical: 4,
     textAlign: 'center',
   },
   botaoReiniciarVitoria: {
