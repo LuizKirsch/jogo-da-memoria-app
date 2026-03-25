@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  Button,
   Image,
   StyleSheet,
   Text,
@@ -9,118 +10,136 @@ import {
 } from "react-native";
 
 import { JogadorTurno } from "../../components/jogador-turno";
+import { reiniciarJogo } from "../../scripts/Vitoria";
 
-function ParesEmbaralhados(numPairs: number) {
+function gerarParesEmbaralhados(qtdPares: number) {
   const ids = Array.from(
-    { length: numPairs },
+    { length: qtdPares },
     () => Math.floor(Math.random() * 1000) + 1,
   );
 
   const urls = ids.map((id) => `https://picsum.photos/seed/${id}/400/400`);
-  const pairs = [...urls, ...urls];
+  const pares = [...urls, ...urls];
 
-  return pairs.sort(() => Math.random() - 0.5);
+  return pares.sort(() => Math.random() - 0.5);
 }
 
-const NUM_ROWS = 6;
-const NUM_COLS = 4;
+const LINHAS = 6;
+const COLUNAS = 4;
 
-function MemoryGameGrid() {
+function GradeJogoMemoria() {
   const { width } = useWindowDimensions();
 
-  const horizontalMargin = 40;
-  const cellMargin = 4 * 2 * NUM_COLS;
-  const cellSize = (width - horizontalMargin - cellMargin) / NUM_COLS;
+  const margemHorizontal = 40;
+  const margemCelula = 4 * 2 * COLUNAS;
+  const tamanhoCelula = (width - margemHorizontal - margemCelula) / COLUNAS;
 
-  const numPairs = (NUM_ROWS * NUM_COLS) / 2;
+  const qtdPares = (LINHAS * COLUNAS) / 2;
 
-  const cards = useMemo(() => ParesEmbaralhados(numPairs), []);
+  const cartas = useMemo(() => gerarParesEmbaralhados(qtdPares), []);
 
-  const [flipped, setFlipped] = useState<number[]>([]);
-  const [matched, setMatched] = useState<number[]>([]);
-  const [disabled, setDisabled] = useState(false);
+  const [viradas, setViradas] = useState<number[]>([]);
+  const [combinadas, setCombinadas] = useState<number[]>([]);
+  const [bloqueado, setBloqueado] = useState(false);
 
-  const [currentPlayer, setCurrentPlayer] = useState(1);
+  const [jogadorAtual, setJogadorAtual] = useState(1);
+  const [jogadas, setJogadas] = useState<Record<number, number>>({
+    1: 0,
+    2: 0,
+  });
 
-  const [moves, setMoves] = useState<Record<number, number>>({ 1: 0, 2: 0 });
-
-  const [turnStartTime, setTurnStartTime] = useState(Date.now());
-
-  const [turnTimes, setTurnTimes] = useState<
-    { player: number; time: number }[]
+  const [inicioTurno, setInicioTurno] = useState(Date.now());
+  const [temposTurno, setTemposTurno] = useState<
+    { jogador: number; tempo: number }[]
   >([]);
 
-  function handlePress(idx: number) {
-    if (disabled || flipped.includes(idx) || matched.includes(idx)) return;
+  function aoPressionarCarta(indice: number) {
+    if (bloqueado || viradas.includes(indice) || combinadas.includes(indice))
+      return;
 
-    setFlipped((prev) => [...prev, idx]);
+    setViradas((prev) => [...prev, indice]);
+  }
+
+  function aoReiniciar() {
+    reiniciarJogo();
+
+    setViradas([]);
+    setCombinadas([]);
+    setBloqueado(false);
+    setJogadorAtual(1);
+    setJogadas({ 1: 0, 2: 0 });
+    setTemposTurno([]);
+    setInicioTurno(Date.now());
   }
 
   useEffect(() => {
-    if (flipped.length !== 2) return;
+    if (viradas.length !== 2) return;
 
-    setDisabled(true);
+    setBloqueado(true);
 
-    const [first, second] = flipped;
+    const [primeira, segunda] = viradas;
 
-    const endTime = Date.now();
-    const duration = endTime - turnStartTime;
+    const fim = Date.now();
+    const duracao = fim - inicioTurno;
 
-    setTurnTimes((prev) => [
+    setTemposTurno((prev) => [
       ...prev,
-      { player: currentPlayer, time: duration },
+      { jogador: jogadorAtual, tempo: duracao },
     ]);
 
-    setMoves((prev) => ({
+    setJogadas((prev) => ({
       ...prev,
-      [currentPlayer]: prev[currentPlayer] + 1,
+      [jogadorAtual]: prev[jogadorAtual] + 1,
     }));
 
-    if (cards[first] === cards[second]) {
-      setMatched((prev) => [...prev, first, second]);
-      setFlipped([]);
-      setDisabled(false);
-      setTurnStartTime(Date.now());
+    if (cartas[primeira] === cartas[segunda]) {
+      setCombinadas((prev) => [...prev, primeira, segunda]);
+      setViradas([]);
+      setBloqueado(false);
+      setInicioTurno(Date.now());
     } else {
       const timer = setTimeout(() => {
-        setFlipped([]);
-        setDisabled(false);
-
-        setCurrentPlayer((prev) => (prev === 1 ? 2 : 1));
-        setTurnStartTime(Date.now());
+        setViradas([]);
+        setBloqueado(false);
+        setJogadorAtual((prev) => (prev === 1 ? 2 : 1));
+        setInicioTurno(Date.now());
       }, 800);
 
       return () => clearTimeout(timer);
     }
-  }, [flipped, cards, currentPlayer, turnStartTime]);
+  }, [viradas, cartas, jogadorAtual, inicioTurno]);
 
   return (
-    <View>
-      <View style={styles.info}>
-        <JogadorTurno
-          currentPlayer={currentPlayer}
-          moves={moves as JogadorTurnoProps["moves"]}
-        />
+    <View style={estilos.container}>
+      <View style={estilos.info}>
+        <JogadorTurno currentPlayer={jogadorAtual} moves={jogadas} />
       </View>
 
-      <View style={styles.grid}>
-        {Array.from({ length: NUM_ROWS }).map((_, rowIdx) => (
-          <View key={rowIdx} style={styles.row}>
-            {Array.from({ length: NUM_COLS }).map((_, colIdx) => {
-              const idx = rowIdx * NUM_COLS + colIdx;
-              const isFlipped = flipped.includes(idx) || matched.includes(idx);
+      <View style={estilos.grade}>
+        {Array.from({ length: LINHAS }).map((_, linhaIdx) => (
+          <View key={linhaIdx} style={estilos.linha}>
+            {Array.from({ length: COLUNAS }).map((_, colunaIdx) => {
+              const indice = linhaIdx * COLUNAS + colunaIdx;
+              const estaVirada =
+                viradas.includes(indice) || combinadas.includes(indice);
 
               return (
                 <TouchableOpacity
-                  key={colIdx}
-                  style={[styles.cell, { width: cellSize, height: cellSize }]}
+                  key={colunaIdx}
+                  style={[
+                    estilos.celula,
+                    { width: tamanhoCelula, height: tamanhoCelula },
+                  ]}
                   activeOpacity={0.8}
-                  onPress={() => handlePress(idx)}
+                  onPress={() => aoPressionarCarta(indice)}
                 >
-                  {isFlipped ? (
-                    <Image source={{ uri: cards[idx] }} style={styles.image} />
+                  {estaVirada ? (
+                    <Image
+                      source={{ uri: cartas[indice] }}
+                      style={estilos.imagem}
+                    />
                   ) : (
-                    <View style={styles.hidden} />
+                    <View style={estilos.oculta} />
                   )}
                 </TouchableOpacity>
               );
@@ -129,37 +148,44 @@ function MemoryGameGrid() {
         ))}
       </View>
 
-      <View style={styles.info}>
-        {turnTimes.map((t, i) => (
+      <View style={estilos.info}>
+        {temposTurno.map((t, i) => (
           <Text key={i}>
-            P{t.player} - {(t.time / 1000).toFixed(2)}s
+            P{t.jogador} - {(t.tempo / 1000).toFixed(2)}s
           </Text>
         ))}
       </View>
+
+      <Button title="Reiniciar" onPress={aoReiniciar} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  grid: {
+const estilos = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  grade: {
     margin: 20,
   },
-  row: {
+  linha: {
     flexDirection: "row",
   },
-  cell: {
+  celula: {
     margin: 4,
     backgroundColor: "#e0e0e0",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 6,
   },
-  hidden: {
+  oculta: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "#bdbdbd",
     borderRadius: 6,
   },
-  image: {
+  imagem: {
     width: "80%",
     height: "80%",
     borderRadius: 6,
@@ -170,5 +196,5 @@ const styles = StyleSheet.create({
 });
 
 export default function TabIndex() {
-  return <MemoryGameGrid />;
+  return <GradeJogoMemoria />;
 }
