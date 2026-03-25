@@ -1,7 +1,7 @@
 
 const Tabuleiro = () => {
   const linhas = 4;
-  const colunas = 5;
+  const colunas = 6;
 
   const tabuleiro = Array.from({ length: linhas }, () =>
     Array.from({ length: colunas }, () => '')
@@ -26,8 +26,8 @@ const estilos = {
   tabuleiro: {
     display: 'grid',
     gridTemplateRows: 'repeat(4, 50px)',
-    gridTemplateColumns: 'repeat(5, 50px)',
-    gap: '5px',
+    gridTemplateColumns: 'repeat(6, 50px)',
+    gap: '6px',
   },
   linha: {
     display: 'flex',
