@@ -190,6 +190,7 @@ function GradeJogoMemoria() {
       <Button title="Reiniciar" onPress={aoReiniciar} />
     </View>
   );
+}
 
 const estilos = StyleSheet.create({
   container: {
